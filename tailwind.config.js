@@ -5,10 +5,12 @@ module.exports = {
 		'./components/**/*.{js,ts,jsx,tsx,mdx}',
 		'./app/**/*.{js,ts,jsx,tsx,mdx}',
 	],
+	darkMode: 'class',
 	theme: {
 		extend: {
 			backgroundImage: {
-				'gradient-linear': 'linear-gradient(to right, var(--tw-gradient-stops))',
+				'gradient-logo': 'linear-gradient(to right, #7219E3, #1ADBB8)',
+				'gradient-default': 'linear-gradient(135deg, #40e0a3, #ff8c00, #ff0055)',
 			},
 		},
 	},
