@@ -30,16 +30,19 @@ export default function Terminal() {
 }
 
 function TerminalSpec() {
-	const [tokens, setTokens] = React.useState<string[]>([]);
+	const [tokens, setTokens] = React.useState<Token[]>([]);
 
 	async function getTokensFromCommand(command: string) {
-		const cmd = 'git';
+		const tokens = parseToSimpleTokens(command);
+		setTokens(tokens);
+
+		const cmd = tokens.length > 0 ? tokens[0].value : '';
+
 		const response = await import(
 			/* webpackIgnore: true */ `https://cdn.skypack.dev/@withfig/autocomplete/build/${cmd}.js`
 		);
 
 		console.log({ response });
-		console.log({ tokens: parseToSimpleTokens(command) });
 
 		// setTokens
 	}
@@ -47,11 +50,11 @@ function TerminalSpec() {
 	return (
 		<div className='space-y-2'>
 			<ResizableTextarea onSubmit={getTokensFromCommand} />
-			{tokens.length > 0 ? <Explain /> : null}
+			{tokens.length > 0 ? <Explain tokens={tokens} /> : null}
 		</div>
 	);
 }
 
-function Explain() {
+function Explain({ tokens }: { tokens: Token[] }) {
 	return <div>Eplain</div>;
 }
