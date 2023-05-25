@@ -3,4 +3,6 @@ interface Token {
 	value: string;
 }
 
-interface SpecToken {}
+interface SpecToken extends Token, Fig.BaseSuggestion {
+	type: 'command' | 'subcommand' | 'option' | 'argument';
+}

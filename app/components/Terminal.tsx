@@ -4,7 +4,7 @@ import React from 'react';
 import SunSVG from 'static/icons/sun';
 import { Icon } from './ui/icons';
 import { ResizableTextarea } from './ui/textarea';
-import { parseToSimpleTokens } from 'utils/parseTokens';
+import { parseToSimpleTokens, parseToSpecTokens } from 'utils/parseTokens';
 
 export default function Terminal() {
 	return (
@@ -36,13 +36,19 @@ function TerminalSpec() {
 		const tokens = parseToSimpleTokens(command);
 		setTokens(tokens);
 
-		const cmd = tokens.length > 0 ? tokens[0].value : '';
+		if (!tokens?.length) return;
+
+		const cmd = tokens[0].value;
 
 		const response = await import(
 			/* webpackIgnore: true */ `https://cdn.skypack.dev/@withfig/autocomplete/build/${cmd}.js`
 		);
 
-		console.log({ response });
+		if (response.default) {
+			const specTokens = parseToSpecTokens({ spec: response.default, tokens });
+
+			console.log({ specTokens });
+		}
 
 		// setTokens
 	}
