@@ -5,6 +5,7 @@ import SunSVG from 'static/icons/sun';
 import { Icon } from './ui/icons';
 import { ResizableTextarea } from './ui/textarea';
 import { parseToSimpleTokens, parseToSpecTokens } from 'utils/parseTokens';
+import { SpecToken, Token } from 'types';
 
 export default function Terminal() {
 	return (
@@ -31,6 +32,7 @@ export default function Terminal() {
 
 function TerminalSpec() {
 	const [tokens, setTokens] = React.useState<Token[]>([]);
+	const [specTokens, setSpecTokens] = React.useState<SpecToken[]>([]);
 
 	async function getTokensFromCommand(command: string) {
 		const tokens = parseToSimpleTokens(command);
@@ -47,20 +49,20 @@ function TerminalSpec() {
 		if (response.default) {
 			const specTokens = parseToSpecTokens({ spec: response.default, tokens });
 
-			console.log({ specTokens });
+			setSpecTokens(specTokens);
 		}
-
-		// setTokens
 	}
 
 	return (
 		<div className='space-y-2'>
 			<ResizableTextarea onSubmit={getTokensFromCommand} />
-			{tokens.length > 0 ? <Explain tokens={tokens} /> : null}
+			{tokens.length > 0 ? <Explain tokens={tokens} specTokens={specTokens} /> : null}
 		</div>
 	);
 }
 
-function Explain({ tokens }: { tokens: Token[] }) {
+function Explain({ tokens, specTokens }: { tokens: Token[]; specTokens: SpecToken[] }) {
+	console.log({ tokens, specTokens });
+
 	return <div>Eplain</div>;
 }
