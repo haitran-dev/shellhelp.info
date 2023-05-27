@@ -8,7 +8,7 @@ type IconProps = {
 	children: React.ReactNode;
 };
 
-export default function Icon({ w = 16, h = w, isButton, children, classNames }: IconProps) {
+export default function Icon({ w = 20, h = w, isButton, children, classNames }: IconProps) {
 	const Comp = isButton ? 'button' : 'span';
 
 	return (

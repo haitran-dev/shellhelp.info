@@ -30,7 +30,7 @@ const ResizableTextarea = ({ onSubmit, ...delegated }: { onSubmit: (command: str
 				spellCheck='false'
 				onChange={handleChangeInput}
 				onKeyDown={handleKeydown}
-				className='h-[1.5em] bg-transparent outline-none resize-none w-full overflow-hidden break-words'
+				className='h-[1.5em] text-xl bg-transparent outline-none resize-none w-full overflow-hidden break-words'
 				{...delegated}
 			/>
 		</div>
