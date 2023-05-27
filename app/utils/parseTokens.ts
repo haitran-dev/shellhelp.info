@@ -32,7 +32,6 @@ export function parseToSimpleTokens(command: string) {
 
 export function parseToSpecTokens({ spec, tokens }: { spec: Fig.Subcommand; tokens: Token[] }) {
 	let specTokens: SpecToken[] = [];
-	console.log({ spec });
 
 	const command = tokens[0]; // cms is always first of Fig's spec
 
@@ -44,62 +43,20 @@ export function parseToSpecTokens({ spec, tokens }: { spec: Fig.Subcommand; toke
 
 	const restTokens: Token[] = tokens.slice(1);
 
-	const parseArgs = (
-		spec: Fig.Subcommand,
-		tokens: Token[],
-		callback: (argsLength: number) => void
-	) => {
-		for (const token of tokens) {
-			specTokens.push({
-				...spec.args,
-				...token,
-				type: 'argument',
-			});
-		}
+	const pushUnknownToken = (token: Token) => {
+		specTokens.push({
+			error: new InvalidTokenError(token, `unknown token`),
+			...token,
+			type: 'unknown',
+		});
 	};
 
-	const parseOptions = (spec: Fig.Subcommand, tokens: Token[]) => {
-		const [option, ...rest] = tokens;
-
-		if (option.value.startsWith('--')) {
-			// long form
-		}
-
-		// short form
-		const tokenValue = option.value.substring(1); // -abc => abc
-		for (let i = 0; i < tokenValue.length; i++) {
-			const char = tokenValue[i];
-			const optionName = '-' + char; // split option -abc => -a -b -c
-			const subOption = spec.options?.find(({ name }) =>
-				Array.isArray(name) ? name.indexOf(optionName) > -1 : name === optionName
-			);
-
-			if (subOption) {
-				specTokens.push({
-					...subOption,
-					...option,
-					type: 'option',
-				});
-			} else {
-				specTokens.push({
-					error: new InvalidTokenError(option, `unknown option ${optionName}`),
-					...option,
-					type: 'option',
-				});
-			}
-		}
-
-		return;
-	};
-
-	let needCheckRestArgs = true;
+	if (!restTokens.length) specTokens;
 
 	for (let i = 0; i < restTokens.length; i++) {
 		const token: Token = restTokens[i];
 
-		console.log({ restToken: restTokens[i] });
-
-		if (token.value.indexOf('-') > -1) {
+		if (token.value.startsWith('-')) {
 			// is option
 			const option = spec.options?.find(({ name }) =>
 				Array.isArray(name) ? name.indexOf(token.value) > -1 : name === token.value
@@ -118,12 +75,66 @@ export function parseToSpecTokens({ spec, tokens }: { spec: Fig.Subcommand; toke
 					type: 'option',
 				});
 
-				parseArgs(option, restTokens.slice(i + 1), (argsLength) => {
-					i += 1 + argsLength; // check rest tokens excludes arguments
-					needCheckRestArgs = false;
-				});
+				if (!option.args) {
+					// all rest tokens need to be option
+
+					const restTokensAfterOption = restTokens.slice(1);
+					for (const token of restTokensAfterOption) {
+						// is an another option
+						if (token.value.startsWith('-')) break;
+
+						pushUnknownToken(token);
+						i++;
+					}
+				} else if (Array.isArray(option.args)) {
+					const argsLength = option.args.length;
+
+					for (let j = 0; j < argsLength; j++) {
+						const token = restTokens[j].value;
+
+						if (!token.startsWith('-')) {
+							// is argument
+							specTokens.push({
+								...option.args[j],
+								...restTokens[j],
+								type: 'argument',
+							});
+							i += 1;
+						}
+					}
+				} else {
+					if (option.args.isVariadic) {
+						// can have multiple args
+
+						let count = 0; // count token
+						for (let j = i + 1; j < restTokens.length; j++) {
+							if (restTokens[j].value.startsWith('-')) break;
+
+							count += 1;
+							specTokens.push({
+								...option.args,
+								...restTokens[j],
+								type: 'argument',
+							});
+						}
+
+						i += 1 + count;
+					} else {
+						const nextToken = restTokens[i + 1];
+
+						if (nextToken && !nextToken.value.startsWith('-')) {
+							specTokens.push({
+								...option.args,
+								...nextToken,
+								type: 'argument',
+							});
+
+							i = i + 1; // pass over argument
+						}
+					}
+				}
 			}
-		} else if (token.value.indexOf('-') < 0) {
+		} else if (!token.value.startsWith('-')) {
 			// subcommand or argument
 			const subcommand = spec.subcommands?.find((cmd) =>
 				Array.isArray(cmd.name)
@@ -145,12 +156,51 @@ export function parseToSpecTokens({ spec, tokens }: { spec: Fig.Subcommand; toke
 						),
 						type: 'unknown',
 					});
-				}
+				} else if (Array.isArray(spec.args)) {
+					const argsLength = spec.args.length;
+					let count = 0;
+					for (let j = 0; j < argsLength; j++) {
+						const token = restTokens[j].value;
 
-				parseArgs(spec, restTokens.slice(i), (argsLength) => {
-					i += argsLength;
-					needCheckRestArgs = false;
-				});
+						if (!token.startsWith('-')) {
+							// is an argument
+							specTokens.push({
+								...spec.args[j],
+								...restTokens[j],
+								type: 'argument',
+							});
+
+							count++;
+						}
+					}
+					i += count - 1;
+				} else {
+					if (spec.args.isVariadic) {
+						// can have multiple args
+
+						let count = 0; // count token
+						for (let j = i; j < restTokens.length; j++) {
+							if (restTokens[j].value.startsWith('-')) break;
+
+							count += 1;
+							specTokens.push({
+								...spec.args,
+								...restTokens[j],
+								type: 'argument',
+							});
+						}
+
+						i += count - 1;
+					} else {
+						if (!token.value.startsWith('-')) {
+							specTokens.push({
+								...spec.args,
+								...token,
+								type: 'argument',
+							});
+						}
+					}
+				}
 			}
 		}
 	}
