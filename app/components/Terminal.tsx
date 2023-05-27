@@ -58,9 +58,11 @@ function TerminalSpec() {
 				const specTokens = parseToSpecTokens({ spec: response.default, tokens });
 
 				setSpecTokens(specTokens);
+				setError('');
 			}
 		} catch (error) {
 			setError(`Not explanation for command "${cmd}" yet ! 😿`);
+			setSpecTokens([]);
 		}
 	}
 
@@ -78,7 +80,7 @@ function TerminalSpec() {
 
 function Warning({ warning }: { warning: string }) {
 	return (
-		<p className='flex gap-2 items-center'>
+		<p className='flex gap-2 items-center ml-3 text-[#fff222]'>
 			<Icon>
 				<AlertTriangle className='text-warn' />
 			</Icon>
@@ -96,5 +98,31 @@ function Warning({ warning }: { warning: string }) {
 }
 
 function Explain({ tokens, specTokens }: { tokens: Token[]; specTokens: SpecToken[] }) {
-	return <div>Explain</div>;
+	console.log({ tokens, specTokens });
+
+	const spec = tokens[0];
+
+	return (
+		<div>
+			{specTokens.map((token, index) => {
+				if (token.value === spec.value) {
+					return <p key={index}>{token.value}</p>;
+				}
+
+				if (token.type === 'subcommand') {
+					return <p key={index}>{token.value}</p>;
+				}
+
+				if (token.type === 'option') {
+					return <p key={index}>{token.value}</p>;
+				}
+
+				if (token.type === 'argument') {
+					return <p key={index}>{token.value}</p>;
+				}
+			})}
+		</div>
+	);
 }
+
+function ExplainToken({ type }) {}
