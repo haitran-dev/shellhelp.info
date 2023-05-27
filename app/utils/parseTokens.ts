@@ -44,7 +44,11 @@ export function parseToSpecTokens({ spec, tokens }: { spec: Fig.Subcommand; toke
 
 	const restTokens: Token[] = tokens.slice(1);
 
-	const parseArgs = (spec: any, tokens: Token[]) => {
+	const parseArgs = (
+		spec: Fig.Subcommand,
+		tokens: Token[],
+		callback: (argsLength: number) => void
+	) => {
 		for (const token of tokens) {
 			specTokens.push({
 				...spec.args,
@@ -54,8 +58,46 @@ export function parseToSpecTokens({ spec, tokens }: { spec: Fig.Subcommand; toke
 		}
 	};
 
+	const parseOptions = (spec: Fig.Subcommand, tokens: Token[]) => {
+		const [option, ...rest] = tokens;
+
+		if (option.value.startsWith('--')) {
+			// long form
+		}
+
+		// short form
+		const tokenValue = option.value.substring(1); // -abc => abc
+		for (let i = 0; i < tokenValue.length; i++) {
+			const char = tokenValue[i];
+			const optionName = '-' + char; // split option -abc => -a -b -c
+			const subOption = spec.options?.find(({ name }) =>
+				Array.isArray(name) ? name.indexOf(optionName) > -1 : name === optionName
+			);
+
+			if (subOption) {
+				specTokens.push({
+					...subOption,
+					...option,
+					type: 'option',
+				});
+			} else {
+				specTokens.push({
+					error: new InvalidTokenError(option, `unknown option ${optionName}`),
+					...option,
+					type: 'option',
+				});
+			}
+		}
+
+		return;
+	};
+
+	let needCheckRestArgs = true;
+
 	for (let i = 0; i < restTokens.length; i++) {
 		const token: Token = restTokens[i];
+
+		console.log({ restToken: restTokens[i] });
 
 		if (token.value.indexOf('-') > -1) {
 			// is option
@@ -65,7 +107,7 @@ export function parseToSpecTokens({ spec, tokens }: { spec: Fig.Subcommand; toke
 
 			if (!option) {
 				specTokens.push({
-					error: new InvalidTokenError(token, `unknown option ar of ${command.value}`),
+					error: new InvalidTokenError(token, `unknown option of ${command.value}`),
 					...token,
 					type: 'option',
 				});
@@ -75,8 +117,11 @@ export function parseToSpecTokens({ spec, tokens }: { spec: Fig.Subcommand; toke
 					...token,
 					type: 'option',
 				});
-				parseArgs(option, restTokens.slice(i + 1));
-				i = restTokens.length;
+
+				parseArgs(option, restTokens.slice(i + 1), (argsLength) => {
+					i += 1 + argsLength; // check rest tokens excludes arguments
+					needCheckRestArgs = false;
+				});
 			}
 		} else if (token.value.indexOf('-') < 0) {
 			// subcommand or argument
@@ -89,15 +134,24 @@ export function parseToSpecTokens({ spec, tokens }: { spec: Fig.Subcommand; toke
 				specTokens.push(...parseToSpecTokens({ spec: subcommand, tokens: restTokens }));
 				i = restTokens.length;
 			} else {
-				// argument
-				parseArgs(spec, [token]);
+				// argument(s) (single or plural) or not
+
+				if (!spec.args) {
+					specTokens.push({
+						...token,
+						error: new InvalidTokenError(
+							token,
+							'is neither a valid subcommand, or argument'
+						),
+						type: 'unknown',
+					});
+				}
+
+				parseArgs(spec, restTokens.slice(i), (argsLength) => {
+					i += argsLength;
+					needCheckRestArgs = false;
+				});
 			}
-		} else {
-			specTokens.push({
-				...token,
-				error: new InvalidTokenError(token, 'is neither a valid subcommand, or argument'),
-				type: 'unknown',
-			});
 		}
 	}
 
