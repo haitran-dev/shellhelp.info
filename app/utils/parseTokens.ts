@@ -53,9 +53,9 @@ export function parseToSpecTokens({
 
 	const pushUnknownToken = (token: Token) => {
 		specTokens.push({
-			error: new InvalidTokenError(token, `is neither a valid subcommand, or argument`),
 			...token,
-			type: 'unknown',
+			type: undefined,
+			error: new InvalidTokenError(token, `is neither a valid subcommand, or argument`),
 		});
 	};
 
@@ -74,9 +74,9 @@ export function parseToSpecTokens({
 
 			if (!option) {
 				specTokens.push({
-					error: new InvalidTokenError(token, `unknown option of ${command.value}`),
 					...token,
 					type: 'option',
+					error: new InvalidTokenError(token, `unknown option`),
 				});
 			} else {
 				specTokens.push({
@@ -87,15 +87,13 @@ export function parseToSpecTokens({
 
 				if (!option.args) {
 					// all rest tokens need to be option
-
-					const restTokensAfterOption = restTokens.slice(1);
-					for (const token of restTokensAfterOption) {
-						// is an another option
-						if (token.value.startsWith('-')) break;
-
-						pushUnknownToken(token);
-						i++;
-					}
+					// const restTokensAfterOption = restTokens.slice(1);
+					// for (const token of restTokensAfterOption) {
+					// 	// is an another option
+					// 	if (token.value.startsWith('-')) break;
+					// 	pushUnknownToken(token);
+					// 	i++;
+					// }
 				} else if (Array.isArray(option.args)) {
 					const argsLength = option.args.length;
 
@@ -107,7 +105,7 @@ export function parseToSpecTokens({
 							specTokens.push({
 								...option.args[j],
 								...restTokens[j],
-								type: 'argument',
+								type: 'arg',
 							});
 							i += 1;
 						}
@@ -124,7 +122,7 @@ export function parseToSpecTokens({
 							specTokens.push({
 								...option.args,
 								...restTokens[j],
-								type: 'argument',
+								type: 'arg',
 							});
 						}
 
@@ -138,7 +136,7 @@ export function parseToSpecTokens({
 							specTokens.push({
 								...option.args,
 								...nextToken,
-								type: 'argument',
+								type: 'arg',
 							});
 
 							i = i + 1; // pass over argument
@@ -172,7 +170,7 @@ export function parseToSpecTokens({
 							specTokens.push({
 								...spec.args[j],
 								...restTokens[j],
-								type: 'argument',
+								type: 'arg',
 							});
 
 							count++;
@@ -191,7 +189,7 @@ export function parseToSpecTokens({
 							specTokens.push({
 								...spec.args,
 								...restTokens[j],
-								type: 'argument',
+								type: 'arg',
 							});
 						}
 
@@ -201,7 +199,7 @@ export function parseToSpecTokens({
 							specTokens.push({
 								...spec.args,
 								...token,
-								type: 'argument',
+								type: 'arg',
 							});
 						}
 

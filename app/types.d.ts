@@ -4,7 +4,7 @@ interface Token {
 	value: string;
 }
 
-interface SpecToken extends Token, Fig.BaseSuggestion {
-	type: 'command' | 'subcommand' | 'option' | 'argument' | 'unknown';
+interface SpecToken extends Token, Fig.Suggestion {
+	// type: 'command' | 'subcommand' | 'option' | 'argument' | 'unknown';
 	error?: InvalidTokenError;
 }

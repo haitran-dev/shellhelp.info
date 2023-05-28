@@ -7,27 +7,26 @@ import { SpecToken } from 'types';
 import { parseToSimpleTokens, parseToSpecTokens } from 'utils/parseTokens';
 import { Icon } from './ui/icons';
 import { ResizableTextarea } from './ui/textarea';
+import { InvalidTokenError } from 'utils/error';
 
 export default function Terminal() {
 	const cliAreaRef = React.useRef<HTMLDivElement>(null);
 	const [commands, setCommands] = React.useState<string[]>([]);
 	const [isShowInput, setShowInput] = React.useState<boolean>(true);
 
-	const handleSubmitCommand = (command: string) => {
-		setCommands([...commands, command]);
-		setShowInput(false);
-
+	const scrollToBottom = () => {
 		if (cliAreaRef.current) {
 			cliAreaRef.current.scrollTop = cliAreaRef.current?.scrollHeight;
 		}
 	};
 
+	const handleSubmitCommand = (command: string) => {
+		setCommands([...commands, command]);
+		setShowInput(false);
+	};
+
 	const handleUpdateTerminal = React.useCallback(() => {
 		setShowInput(true);
-
-		if (cliAreaRef.current) {
-			cliAreaRef.current.scrollTop = cliAreaRef.current?.scrollHeight;
-		}
 	}, []);
 
 	return (
@@ -52,7 +51,11 @@ export default function Terminal() {
 					<div key={index} className=''>
 						<ResizableTextarea value={cmd} disabled key={crypto.randomUUID()} />
 
-						<MemoExplainComp cmd={cmd} onFetchSuccess={handleUpdateTerminal} />
+						<MemoExplainComp
+							cmd={cmd}
+							onFetchSuccess={handleUpdateTerminal}
+							updateScroll={scrollToBottom}
+						/>
 					</div>
 				))}
 				{isShowInput && (
@@ -66,7 +69,15 @@ export default function Terminal() {
 	);
 }
 
-const Explain = ({ cmd, onFetchSuccess }: { cmd: string; onFetchSuccess: () => void }) => {
+const Explain = ({
+	cmd,
+	onFetchSuccess,
+	updateScroll,
+}: {
+	cmd: string;
+	onFetchSuccess: () => void;
+	updateScroll: () => void;
+}) => {
 	const [specInfo, setSpecInfo] = React.useState<Fig.Subcommand>();
 	const [specError, setSpecError] = React.useState<string>('');
 	const [isLoadingSpec, setLoadingSpec] = React.useState<boolean>(false);
@@ -100,6 +111,10 @@ const Explain = ({ cmd, onFetchSuccess }: { cmd: string; onFetchSuccess: () => v
 		getSpec();
 	}, [spec, onFetchSuccess]);
 
+	React.useEffect(() => {
+		updateScroll();
+	});
+
 	if (isLoadingSpec) {
 		return <p>Loading ...</p>;
 	}
@@ -113,21 +128,65 @@ const Explain = ({ cmd, onFetchSuccess }: { cmd: string; onFetchSuccess: () => v
 	return (
 		<div>
 			{specTokens.map((token, index) => {
-				if (token.value === spec) {
-					return <p key={index}>{token.value}</p>;
-				}
+				return (
+					<React.Fragment key={index}>
+						{(function () {
+							if (token.value === spec) {
+								return (
+									<fieldset className='p-2 mr-1 border border-solid border-cmd rounded-md'>
+										<legend className='p-1 text-cmd'>command</legend>
+										<p className='text-cmd'>{token.value}</p>
+										<p className='text-cmd'>{token.description}</p>
+									</fieldset>
+								);
+							}
 
-				if (token.type === 'subcommand') {
-					return <p key={index}>{token.value}</p>;
-				}
+							if (token.type === 'subcommand') {
+								return (
+									<fieldset className='p-2 mr-1 border border-solid border-sub-cmd rounded-md'>
+										<legend className='p-1 text-sub-cmd'>{token.type}</legend>
+										<p className='text-sub-cmd'>{token.value}</p>
+										<p className='text-sub-cmd'>{token.description}</p>
+									</fieldset>
+								);
+							}
 
-				if (token.type === 'option') {
-					return <p key={index}>{token.value}</p>;
-				}
+							if (token.type === 'option') {
+								if (token.error instanceof InvalidTokenError) {
+									return (
+										<fieldset className='p-2 mr-1 border border-solid border-option rounded-md'>
+											<legend className='p-1 text-option'>
+												{token.type}
+											</legend>
+											<p className='text-option'>{token.value}</p>
+											<p className='text-option'>{token.error.message}</p>
+										</fieldset>
+									);
+								}
 
-				if (token.type === 'argument') {
-					return <p key={index}>{token.value}</p>;
-				}
+								return (
+									<fieldset className='p-2 mr-1 border border-solid border-option rounded-md'>
+										<legend className='p-1 text-option'>{token.type}</legend>
+										<p className='text-option'>{token.value}</p>
+										<p className='text-option'>{token.description}</p>
+									</fieldset>
+								);
+							}
+
+							if (token.type === 'arg') {
+								return (
+									<fieldset className='p-2 mr-1 border border-solid border-args rounded-md'>
+										<legend className='p-1 text-args'>{token.type}</legend>
+										<p className='text-args'>{token.value}</p>
+										<p className='text-args'>{token.name}</p>
+									</fieldset>
+								);
+							}
+
+							return null;
+						})()}
+					</React.Fragment>
+				);
 			})}
 		</div>
 	);

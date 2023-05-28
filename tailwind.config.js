@@ -15,9 +15,10 @@ module.exports = {
 			colors: {
 				warn: 'hsl(45, 100%, 50%)',
 				error: 'hsl(0, 100%, 50%)',
-				cmd: 'hsl(200, 100%, 50%)',
-				'sub-cmd': 'hsl(150, 100%, 50%)',
-				args: 'hsl(320, 100%, 50%)',
+				cmd: 'hsl(200, 100%, 70%)',
+				'sub-cmd': 'hsl(150, 100%, 70%)',
+				option: 'hsl(270, 100%, 70%)',
+				args: 'hsl(360, 100%, 70%)',
 			},
 		},
 	},

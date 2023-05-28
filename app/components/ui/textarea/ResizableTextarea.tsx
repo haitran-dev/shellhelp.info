@@ -27,7 +27,7 @@ const ResizableTextarea: React.FC<
 	};
 
 	return (
-		<div className='flex gap-2 items-start text-xl '>
+		<div className='flex gap-2 items-start text-[1.25rem]'>
 			<label className='select-none'>~</label>
 			<textarea
 				ref={textareaRef}
