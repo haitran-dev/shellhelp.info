@@ -1,6 +1,10 @@
 import React from 'react';
 
-const ResizableTextarea = ({ onSubmit, ...delegated }: { onSubmit: (command: string) => void }) => {
+const ResizableTextarea: React.FC<
+	{
+		onSubmitSpec?: (command: string) => void;
+	} & React.ComponentProps<'textarea'>
+> = ({ onSubmitSpec, ...delegated }) => {
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
 	const handleChangeInput = () => {
@@ -15,7 +19,10 @@ const ResizableTextarea = ({ onSubmit, ...delegated }: { onSubmit: (command: str
 	const handleKeydown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
 		if (e.key === 'Enter') {
 			e.preventDefault();
-			onSubmit(textareaRef.current?.value?.trimStart() || '');
+
+			if (typeof onSubmitSpec === 'function') {
+				onSubmitSpec(textareaRef.current?.value?.trimStart() || '');
+			}
 		}
 	};
 

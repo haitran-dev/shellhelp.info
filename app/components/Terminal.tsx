@@ -3,15 +3,35 @@
 import React from 'react';
 import AlertTriangle from 'static/icons/alert-triangle';
 import SunSVG from 'static/icons/sun';
+import { SpecToken } from 'types';
+import { parseToSimpleTokens, parseToSpecTokens } from 'utils/parseTokens';
 import { Icon } from './ui/icons';
 import { ResizableTextarea } from './ui/textarea';
-import { parseToSimpleTokens, parseToSpecTokens } from 'utils/parseTokens';
-import { SpecToken, Token } from 'types';
-import { InvalidTokenError } from 'utils/error';
 
 export default function Terminal() {
+	const cliAreaRef = React.useRef<HTMLDivElement>(null);
+	const [commands, setCommands] = React.useState<string[]>([]);
+	const [isShowInput, setShowInput] = React.useState<boolean>(true);
+
+	const handleSubmitCommand = (command: string) => {
+		setCommands([...commands, command]);
+		setShowInput(false);
+
+		if (cliAreaRef.current) {
+			cliAreaRef.current.scrollTop = cliAreaRef.current?.scrollHeight;
+		}
+	};
+
+	const handleUpdateTerminal = React.useCallback(() => {
+		setShowInput(true);
+
+		if (cliAreaRef.current) {
+			cliAreaRef.current.scrollTop = cliAreaRef.current?.scrollHeight;
+		}
+	}, []);
+
 	return (
-		<div className='w-full max-w-[800px] h-[300px] sm:h-[450px] p-2 bg-gray-900/70 backdrop-blur-md rounded-lg shadow-xl text-white space-y-4'>
+		<div className='w-full flex flex-col gap-4 max-w-[800px] h-[300px] sm:h-[450px] p-2 bg-gray-900/70 backdrop-blur-md rounded-lg shadow-xl text-white'>
 			<div className='flex h-5 justify-between items-center relative'>
 				<div className='flex gap-2'>
 					<span className='w-3 h-3 rounded-full bg-red-400' />
@@ -27,85 +47,73 @@ export default function Terminal() {
 					</Icon>
 				</div>
 			</div>
-			<TerminalSpec />
+			<div ref={cliAreaRef} className='flex-1 space-y-2 overflow-auto'>
+				{commands.map((cmd, index) => (
+					<div key={index} className=''>
+						<ResizableTextarea value={cmd} disabled key={crypto.randomUUID()} />
+
+						<MemoExplainComp cmd={cmd} onFetchSuccess={handleUpdateTerminal} />
+					</div>
+				))}
+				{isShowInput && (
+					<ResizableTextarea
+						key={crypto.randomUUID()}
+						onSubmitSpec={handleSubmitCommand}
+					/>
+				)}
+			</div>
 		</div>
 	);
 }
 
-function TerminalSpec() {
-	const [tokens, setTokens] = React.useState<Token[]>([]);
-	const [specTokens, setSpecTokens] = React.useState<SpecToken[]>([]);
-	const [error, setError] = React.useState<string>('');
+const Explain = ({ cmd, onFetchSuccess }: { cmd: string; onFetchSuccess: () => void }) => {
+	const [specInfo, setSpecInfo] = React.useState<Fig.Subcommand>();
+	const [specError, setSpecError] = React.useState<string>('');
+	const [isLoadingSpec, setLoadingSpec] = React.useState<boolean>(false);
+	const tokens = React.useMemo(() => parseToSimpleTokens(cmd), [cmd]);
+	const specTokens: SpecToken[] = React.useMemo(
+		() => parseToSpecTokens({ spec: specInfo, tokens }),
+		[specInfo, tokens]
+	);
 
-	async function getTokensFromCommand(command: string) {
-		const tokens = parseToSimpleTokens(command);
-		setTokens(tokens);
+	const spec = tokens.length > 0 ? tokens[0].value : '';
 
-		if (!tokens?.length) return;
+	React.useEffect(() => {
+		const getSpec = async () => {
+			try {
+				setLoadingSpec(true);
+				const response = await import(
+					/* webpackIgnore: true */ `https://cdn.skypack.dev/@withfig/autocomplete/build/${spec}.js`
+				);
 
-		const cmd = tokens[0].value;
-
-		try {
-			const response = await import(
-				/* webpackIgnore: true */ `https://cdn.skypack.dev/@withfig/autocomplete/build/${cmd}.js`
-			);
-
-			if (!response?.default) {
-				throw new Error();
+				if (response.default) {
+					setSpecInfo(response.default);
+					setSpecError('');
+				}
+			} catch (error) {
+				setSpecError(`Not explanation for command "${spec}" yet ! 😿`);
 			}
+			setLoadingSpec(false);
+			onFetchSuccess();
+		};
 
-			if (response.default) {
-				const specTokens = parseToSpecTokens({ spec: response.default, tokens });
+		getSpec();
+	}, [spec, onFetchSuccess]);
 
-				setSpecTokens(specTokens);
-				setError('');
-			}
-		} catch (error) {
-			setError(`Not explanation for command "${cmd}" yet ! 😿`);
-			setSpecTokens([]);
-		}
+	if (isLoadingSpec) {
+		return <p>Loading ...</p>;
 	}
 
-	return (
-		<div className='space-y-2'>
-			<ResizableTextarea onSubmit={getTokensFromCommand} />
-			{error ? (
-				<Warning warning={error} />
-			) : (
-				<Explain tokens={tokens} specTokens={specTokens} />
-			)}
-		</div>
-	);
-}
+	if (specError) {
+		return <Warning warning={specError} />;
+	}
 
-function Warning({ warning }: { warning: string }) {
-	return (
-		<p className='flex gap-2 items-center ml-3 text-[#fff222]'>
-			<Icon>
-				<AlertTriangle className='text-warn' />
-			</Icon>
-			{warning}
-			<a
-				href='https://fig.io/'
-				target='_blank'
-				rel='noopener noreferrer'
-				className='underline'
-			>
-				Contribute now at Fig.io
-			</a>
-		</p>
-	);
-}
-
-function Explain({ tokens, specTokens }: { tokens: Token[]; specTokens: SpecToken[] }) {
-	console.log({ tokens, specTokens });
-
-	const spec = tokens[0];
+	console.log({ specTokens });
 
 	return (
 		<div>
 			{specTokens.map((token, index) => {
-				if (token.value === spec.value) {
+				if (token.value === spec) {
 					return <p key={index}>{token.value}</p>;
 				}
 
@@ -123,6 +131,25 @@ function Explain({ tokens, specTokens }: { tokens: Token[]; specTokens: SpecToke
 			})}
 		</div>
 	);
+};
+
+function Warning({ warning }: { warning: string }) {
+	return (
+		<p className='flex gap-2 items-center text-[#fff222]'>
+			<Icon>
+				<AlertTriangle className='text-warn' />
+			</Icon>
+			{warning}
+			<a
+				href='https://fig.io/'
+				target='_blank'
+				rel='noopener noreferrer'
+				className='underline'
+			>
+				Contribute now at Fig.io
+			</a>
+		</p>
+	);
 }
 
-function ExplainToken({ type }) {}
+const MemoExplainComp = React.memo(Explain);

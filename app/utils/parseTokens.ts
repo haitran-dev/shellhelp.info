@@ -30,8 +30,16 @@ export function parseToSimpleTokens(command: string) {
  * @param tokens Simple tokens from `parseToSimpleTokens`
  */
 
-export function parseToSpecTokens({ spec, tokens }: { spec: Fig.Subcommand; tokens: Token[] }) {
+export function parseToSpecTokens({
+	spec,
+	tokens,
+}: {
+	spec: Fig.Subcommand | undefined;
+	tokens: Token[];
+}) {
 	let specTokens: SpecToken[] = [];
+
+	if (!spec) return specTokens;
 
 	const command = tokens[0]; // cms is always first of Fig's spec
 
@@ -45,11 +53,13 @@ export function parseToSpecTokens({ spec, tokens }: { spec: Fig.Subcommand; toke
 
 	const pushUnknownToken = (token: Token) => {
 		specTokens.push({
-			error: new InvalidTokenError(token, `unknown token`),
+			error: new InvalidTokenError(token, `is neither a valid subcommand, or argument`),
 			...token,
 			type: 'unknown',
 		});
 	};
+
+	let needCheckRestArgs = true;
 
 	if (!restTokens.length) specTokens;
 
@@ -122,6 +132,8 @@ export function parseToSpecTokens({ spec, tokens }: { spec: Fig.Subcommand; toke
 					} else {
 						const nextToken = restTokens[i + 1];
 
+						console.log({ nextToken });
+
 						if (nextToken && !nextToken.value.startsWith('-')) {
 							specTokens.push({
 								...option.args,
@@ -134,7 +146,7 @@ export function parseToSpecTokens({ spec, tokens }: { spec: Fig.Subcommand; toke
 					}
 				}
 			}
-		} else if (!token.value.startsWith('-')) {
+		} else {
 			// subcommand or argument
 			const subcommand = spec.subcommands?.find((cmd) =>
 				Array.isArray(cmd.name)
@@ -147,22 +159,15 @@ export function parseToSpecTokens({ spec, tokens }: { spec: Fig.Subcommand; toke
 			} else {
 				// argument(s) (single or plural) or not
 
-				if (!spec.args) {
-					specTokens.push({
-						...token,
-						error: new InvalidTokenError(
-							token,
-							'is neither a valid subcommand, or argument'
-						),
-						type: 'unknown',
-					});
+				if (!spec.args || !needCheckRestArgs) {
+					pushUnknownToken(token);
 				} else if (Array.isArray(spec.args)) {
 					const argsLength = spec.args.length;
 					let count = 0;
 					for (let j = 0; j < argsLength; j++) {
-						const token = restTokens[j].value;
+						const token = restTokens[j]?.value;
 
-						if (!token.startsWith('-')) {
+						if (token && !token.startsWith('-')) {
 							// is an argument
 							specTokens.push({
 								...spec.args[j],
@@ -199,6 +204,8 @@ export function parseToSpecTokens({ spec, tokens }: { spec: Fig.Subcommand; toke
 								type: 'argument',
 							});
 						}
+
+						needCheckRestArgs = false;
 					}
 				}
 			}
