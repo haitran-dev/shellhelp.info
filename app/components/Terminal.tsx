@@ -3,10 +3,13 @@
 import React from 'react';
 import AlertTriangle from 'static/icons/alert-triangle';
 import SunSVG from 'static/icons/sun';
+import EraserSVG from 'static/icons/eraser';
+import InfoSVG from 'static/icons/info';
 import { SpecToken } from 'types';
 import { parseToSimpleTokens, parseToSpecTokens } from 'utils/parseTokens';
 import { ResizableTextarea } from './ui/textarea';
 import { InvalidTokenError } from 'utils/error';
+import { Icon } from './ui/icons';
 
 export default function Terminal() {
 	const cliAreaRef = React.useRef<HTMLDivElement>(null);
@@ -50,7 +53,15 @@ export default function Terminal() {
 					Terminal
 				</div>
 				<div className='flex gap-1'>
-					<SunSVG className='w-6' />
+					<Icon tooltip='Clear' isButton onClick={clearTerminal}>
+						<EraserSVG className='w-6 h-6' />
+					</Icon>
+					<Icon tooltip='Info' isButton>
+						<InfoSVG className='w-6 h-6' />
+					</Icon>
+					<Icon tooltip='Change theme' isButton>
+						<SunSVG className='w-6 h-6' />
+					</Icon>
 				</div>
 			</div>
 			<div ref={cliAreaRef} className='flex-1 space-y-6 overflow-auto'>

@@ -1,14 +1,16 @@
 import ShellSVG from 'static/icons/shell.js';
 import { Icon } from 'components/ui/icons';
 import Terminal from 'components/Terminal';
+import { Tooltip } from 'react-tooltip';
 
-export default function Home() {
+export default function App() {
 	return (
 		<main className='h-screen bg-gradient-default p-2 sm:p-4 overflow-auto'>
 			<div className='flex flex-col mx-auto items-center mt-[50px] sm:mt-[100px] mb-[30px] gap-4'>
 				<Logo />
 				<Terminal />
 			</div>
+			<Tooltip id='tooltip-icon' />
 		</main>
 	);
 }

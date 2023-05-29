@@ -22,11 +22,16 @@ module.exports = {
 			},
 			animation: {
 				flash: 'flash 1s infinite',
+				shake: 'shake 0.2s',
 			},
 			keyframes: {
 				flash: {
 					'51%': { opacity: 1 },
 					'1%, 50%': { opacity: 0 },
+				},
+				shake: {
+					'0%, 100%': { transform: 'rotate(0deg)' },
+					'50%': { transform: 'rotate(10deg)' },
 				},
 			},
 		},

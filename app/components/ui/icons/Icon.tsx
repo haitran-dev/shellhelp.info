@@ -1,23 +1,22 @@
 import React from 'react';
 
 type IconProps = {
-	w?: number;
-	h?: number;
 	isButton?: boolean;
 	classNames?: string;
 	children: React.ReactNode;
+	tooltip?: string;
+	onClick?: () => void;
 };
 
-export default function Icon({ w = 20, h = w, isButton, children, classNames }: IconProps) {
-	const Comp = isButton ? 'button' : 'span';
+export default function Icon({ isButton, children, classNames = '', tooltip, onClick }: IconProps) {
+	const Comp = isButton ? 'button' : 'div';
 
 	return (
 		<Comp
-			style={{
-				width: w + 'px',
-				height: h + 'px',
-			}}
-			className={'flex items-center justify-center ' + classNames}
+			onClick={onClick}
+			data-tooltip-id='tooltip-icon'
+			data-tooltip-content={tooltip}
+			className={'flex items-center justify-center w-8 h-8' + classNames}
 		>
 			{children}
 		</Comp>
