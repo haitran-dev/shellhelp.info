@@ -20,6 +20,15 @@ module.exports = {
 				option: 'hsl(270, 100%, 70%)',
 				args: 'hsl(360, 100%, 70%)',
 			},
+			animation: {
+				flash: 'flash 1s infinite',
+			},
+			keyframes: {
+				flash: {
+					'51%': { opacity: 1 },
+					'1%, 50%': { opacity: 0 },
+				},
+			},
 		},
 	},
 	plugins: [],

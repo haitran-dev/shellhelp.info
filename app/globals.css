@@ -2,10 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
-html,
-body {
-	height: 100vh;
-	width: 100%;
+::-webkit-scrollbar {
+	width: 3px;
+}
+
+::-webkit-scrollbar-track {
+	background-color: hsl(0, 0%, 100%, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+	background-color: hsl(0, 0%, 72%);
 }
 
 * {
@@ -15,14 +21,30 @@ body {
 	margin: 0;
 }
 
-::-webkit-scrollbar {
-	width: 4px;
+html,
+body {
+	height: 100vh;
+	width: 100%;
 }
 
-::-webkit-scrollbar-track {
-	background-color: hsl(0, 0%, 100%, 0.2);
+html {
+	font-size: 15px;
 }
 
-::-webkit-scrollbar-thumb {
-	background-color: hsl(0, 0%, 72%);
+@media screen and (max-width: 480px) {
+	html {
+		font-size: 9px;
+	}
+}
+
+@media screen and (min-width: 481px) and (max-width: 768px) {
+	html {
+		font-size: 11px;
+	}
+}
+
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+	html {
+		font-size: 13px;
+	}
 }

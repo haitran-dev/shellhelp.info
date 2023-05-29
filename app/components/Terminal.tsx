@@ -5,13 +5,13 @@ import AlertTriangle from 'static/icons/alert-triangle';
 import SunSVG from 'static/icons/sun';
 import { SpecToken } from 'types';
 import { parseToSimpleTokens, parseToSpecTokens } from 'utils/parseTokens';
-import { Icon } from './ui/icons';
 import { ResizableTextarea } from './ui/textarea';
 import { InvalidTokenError } from 'utils/error';
 
 export default function Terminal() {
 	const cliAreaRef = React.useRef<HTMLDivElement>(null);
 	const [commands, setCommands] = React.useState<string[]>([]);
+	const [commandsHistory, setCommandsHistory] = React.useState<string[]>([]);
 	const [isShowInput, setShowInput] = React.useState<boolean>(true);
 
 	const scrollToBottom = () => {
@@ -20,8 +20,11 @@ export default function Terminal() {
 		}
 	};
 
-	const handleSubmitCommand = (command: string) => {
-		setCommands([...commands, command]);
+	const handleSubmitCommand = (newCommand: string) => {
+		const newCommands = [...commands, newCommand];
+
+		setCommands(newCommands);
+		setCommandsHistory(newCommands);
 		setShowInput(false);
 	};
 
@@ -29,8 +32,14 @@ export default function Terminal() {
 		setShowInput(true);
 	}, []);
 
+	function clearTerminal() {
+		setCommands([]);
+	}
+
+	console.log({ commands });
+
 	return (
-		<div className='w-full flex flex-col gap-4 max-w-[800px] h-[300px] sm:h-[450px] p-2 bg-gray-900/70 backdrop-blur-md rounded-lg shadow-xl text-white'>
+		<div className='w-full flex flex-col gap-4 max-w-[800px] h-[50rem] sm:h-[40rem] md:h-[35rem] p-2 bg-gray-900/70 backdrop-blur-md rounded-lg shadow-xl text-white'>
 			<div className='flex h-5 justify-between items-center relative'>
 				<div className='flex gap-2'>
 					<span className='w-3 h-3 rounded-full bg-red-400' />
@@ -41,15 +50,13 @@ export default function Terminal() {
 					Terminal
 				</div>
 				<div className='flex gap-1'>
-					<Icon isButton>
-						<SunSVG />
-					</Icon>
+					<SunSVG className='w-6' />
 				</div>
 			</div>
-			<div ref={cliAreaRef} className='flex-1 space-y-2 overflow-auto'>
+			<div ref={cliAreaRef} className='flex-1 space-y-6 overflow-auto'>
 				{commands.map((cmd, index) => (
-					<div key={index} className=''>
-						<ResizableTextarea value={cmd} disabled key={crypto.randomUUID()} />
+					<div key={index}>
+						<ResizableTextarea key={index} disabled value={cmd} />
 
 						<MemoExplainComp
 							cmd={cmd}
@@ -58,12 +65,7 @@ export default function Terminal() {
 						/>
 					</div>
 				))}
-				{isShowInput && (
-					<ResizableTextarea
-						key={crypto.randomUUID()}
-						onSubmitSpec={handleSubmitCommand}
-					/>
-				)}
+				{isShowInput && <ResizableTextarea onSubmitSpec={handleSubmitCommand} />}
 			</div>
 		</div>
 	);
@@ -116,7 +118,7 @@ const Explain = ({
 	});
 
 	if (isLoadingSpec) {
-		return <p>Loading ...</p>;
+		return <div className='w-2 h-4 bg-white animate-flash' />;
 	}
 
 	if (specError) {
@@ -126,60 +128,52 @@ const Explain = ({
 	console.log({ specTokens });
 
 	return (
-		<div>
+		<div className='space-y-2'>
 			{specTokens.map((token, index) => {
 				return (
 					<React.Fragment key={index}>
 						{(function () {
 							if (token.value === spec) {
 								return (
-									<fieldset className='p-2 mr-1 border border-solid border-cmd rounded-md'>
-										<legend className='p-1 text-cmd'>command</legend>
-										<p className='text-cmd'>{token.value}</p>
-										<p className='text-cmd'>{token.description}</p>
-									</fieldset>
+									<TokenField
+										className='border-cmd text-cmd'
+										token={token}
+										isCommand
+									/>
 								);
 							}
 
 							if (token.type === 'subcommand') {
 								return (
-									<fieldset className='p-2 mr-1 border border-solid border-sub-cmd rounded-md'>
-										<legend className='p-1 text-sub-cmd'>{token.type}</legend>
-										<p className='text-sub-cmd'>{token.value}</p>
-										<p className='text-sub-cmd'>{token.description}</p>
-									</fieldset>
+									<TokenField
+										className='border-sub-cmd text-sub-cmd'
+										token={token}
+									/>
 								);
 							}
 
 							if (token.type === 'option') {
 								if (token.error instanceof InvalidTokenError) {
 									return (
-										<fieldset className='p-2 mr-1 border border-solid border-option rounded-md'>
-											<legend className='p-1 text-option'>
-												{token.type}
-											</legend>
-											<p className='text-option'>{token.value}</p>
-											<p className='text-option'>{token.error.message}</p>
-										</fieldset>
+										<TokenField
+											className='border-option text-option'
+											token={token}
+											isError
+										/>
 									);
 								}
 
 								return (
-									<fieldset className='p-2 mr-1 border border-solid border-option rounded-md'>
-										<legend className='p-1 text-option'>{token.type}</legend>
-										<p className='text-option'>{token.value}</p>
-										<p className='text-option'>{token.description}</p>
-									</fieldset>
+									<TokenField
+										className='border-option text-option'
+										token={token}
+									/>
 								);
 							}
 
 							if (token.type === 'arg') {
 								return (
-									<fieldset className='p-2 mr-1 border border-solid border-args rounded-md'>
-										<legend className='p-1 text-args'>{token.type}</legend>
-										<p className='text-args'>{token.value}</p>
-										<p className='text-args'>{token.name}</p>
-									</fieldset>
+									<TokenField className='border-args text-args' token={token} />
 								);
 							}
 
@@ -192,12 +186,38 @@ const Explain = ({
 	);
 };
 
+function TokenField({
+	className,
+	token,
+	isError,
+	isCommand,
+}: {
+	className?: string;
+	token: SpecToken;
+	isError?: boolean;
+	isCommand?: boolean;
+}) {
+	return (
+		<fieldset
+			className={`pt-0 px-4 pb-2 w-[95%] mx-auto border-[2px] border-solid rounded ${className}`}
+		>
+			<legend className='p-1 text-lg font-semibold'>
+				{isCommand ? 'command' : token.type}
+			</legend>
+			<p className='text-lg text-white'>{token.value}</p>
+			{isError ? (
+				<p className='font-thin text-error'>{token.error?.message}</p>
+			) : (
+				<p className='font-light text-white'>{token.description || token.name}</p>
+			)}
+		</fieldset>
+	);
+}
+
 function Warning({ warning }: { warning: string }) {
 	return (
 		<p className='flex gap-2 items-center text-[#fff222]'>
-			<Icon>
-				<AlertTriangle className='text-warn' />
-			</Icon>
+			<AlertTriangle className='text-warn w-4' />
 			{warning}
 			<a
 				href='https://fig.io/'
