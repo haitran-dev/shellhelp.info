@@ -130,8 +130,6 @@ export function parseToSpecTokens({
 					} else {
 						const nextToken = restTokens[i + 1];
 
-						console.log({ nextToken });
-
 						if (nextToken && !nextToken.value.startsWith('-')) {
 							specTokens.push({
 								...option.args,

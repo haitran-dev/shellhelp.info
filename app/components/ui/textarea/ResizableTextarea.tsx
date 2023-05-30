@@ -1,15 +1,34 @@
-import React from 'react';
+import React, { ForwardRefRenderFunction } from 'react';
 
-const ResizableTextarea: React.FC<
-	{
-		onSubmitSpec?: (command: string) => void;
-	} & React.ComponentProps<'textarea'>
-> = ({ onSubmitSpec, ...delegated }) => {
+type PropType = {
+	onSubmitSpec?: (command: string) => void;
+	defaultValue?: string;
+} & React.ComponentProps<'textarea'>;
+
+type ForwardRefType = {
+	focus: () => void;
+};
+
+const ResizableTextarea: ForwardRefRenderFunction<ForwardRefType, PropType> = (
+	{ onSubmitSpec, defaultValue, ...delegated },
+	ref
+) => {
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+	const [value, setValue] = React.useState<string | undefined>(defaultValue);
 
-	const handleChangeInput = () => {
+	React.useImperativeHandle(ref, () => ({
+		focus: () => {
+			if (textareaRef.current) textareaRef.current.focus();
+		},
+	}));
+
+	React.useEffect(() => {
+		setValue(defaultValue);
+	}, [defaultValue]);
+
+	const handleChangeInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+		setValue(e.target.value);
 		const textarea = textareaRef.current;
-
 		if (!textarea) return;
 
 		textarea.style.height = '16px';
@@ -21,7 +40,7 @@ const ResizableTextarea: React.FC<
 			e.preventDefault();
 
 			if (typeof onSubmitSpec === 'function') {
-				onSubmitSpec(textareaRef.current?.value?.trimStart() || '');
+				onSubmitSpec(value || '');
 			}
 		}
 	};
@@ -35,6 +54,7 @@ const ResizableTextarea: React.FC<
 				autoComplete='off'
 				autoCorrect='off'
 				spellCheck='false'
+				value={value}
 				onChange={handleChangeInput}
 				onKeyDown={handleKeydown}
 				className='h-[1.5em] bg-transparent outline-none resize-none w-full overflow-hidden break-words'
@@ -44,4 +64,4 @@ const ResizableTextarea: React.FC<
 	);
 };
 
-export default ResizableTextarea;
+export default React.forwardRef<ForwardRefType, PropType>(ResizableTextarea);
