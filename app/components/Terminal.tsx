@@ -198,7 +198,7 @@ const Explain = ({
 							if (token.value === spec) {
 								return (
 									<TokenField
-										className='border-cmd text-cmd'
+										className='border-cmd-light dark:border-cmd text-cmd-light dark:text-cmd'
 										token={token}
 										isCommand
 									/>
@@ -208,7 +208,7 @@ const Explain = ({
 							if (token.type === 'subcommand') {
 								return (
 									<TokenField
-										className='border-sub-cmd text-sub-cmd'
+										className='border-sub-cmd-light dark:border-sub-cmd text-sub-cmd-light dark:text-sub-cmd'
 										token={token}
 									/>
 								);
@@ -218,7 +218,7 @@ const Explain = ({
 								if (token.error instanceof InvalidTokenError) {
 									return (
 										<TokenField
-											className='border-option text-option'
+											className='border-option-light dark:border-option text-option-light dark:text-option'
 											token={token}
 											isError
 										/>
@@ -235,7 +235,10 @@ const Explain = ({
 
 							if (token.type === 'arg') {
 								return (
-									<TokenField className='border-args text-args' token={token} />
+									<TokenField
+										className='border-args-light dark:border-args text-args-light dark:text-args'
+										token={token}
+									/>
 								);
 							}
 
