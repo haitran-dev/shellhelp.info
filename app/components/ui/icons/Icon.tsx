@@ -1,15 +1,14 @@
 import React from 'react';
 
 type IconProps = {
-	isButton?: boolean;
 	classNames?: string;
 	children: React.ReactNode;
 	tooltip?: string;
 	onClick?: () => void;
 };
 
-export default function Icon({ isButton, children, classNames = '', tooltip, onClick }: IconProps) {
-	const Comp = isButton ? 'button' : 'div';
+export default function Icon({ children, classNames = '', tooltip, onClick }: IconProps) {
+	const Comp = onClick ? 'button' : 'div';
 
 	return (
 		<Comp

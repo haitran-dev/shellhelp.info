@@ -17,7 +17,7 @@ export default function App() {
 
 function Logo() {
 	return (
-		<div className='flex gap-3 select-none items-center text-gray-800'>
+		<div className='flex gap-3 select-none items-center backdrop-blur-md text-gray-800'>
 			<Icon classNames='!w-[48px] sm:!w-[72px]'>
 				<ShellSVG />
 			</Icon>
