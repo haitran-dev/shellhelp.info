@@ -5,8 +5,8 @@ import { Tooltip } from 'react-tooltip';
 
 export default function App() {
 	return (
-		<main className='h-screen bg-gradient-default p-2 sm:p-4 overflow-auto'>
-			<div className='flex flex-col mx-auto items-center mt-[50px] sm:mt-[100px] mb-[30px] gap-4'>
+		<main className='h-screen bg-gradient-logo p-2 sm:p-4 overflow-auto'>
+			<div className='flex flex-col mx-auto items-center mt-[50px] sm:mt-[100px] mb-[30px] gap-10'>
 				<Logo />
 				<Terminal />
 			</div>
@@ -17,7 +17,7 @@ export default function App() {
 
 function Logo() {
 	return (
-		<div className='flex gap-3 select-none items-center backdrop-blur-md text-gray-800'>
+		<div className='flex gap-4 select-none items-center backdrop-blur-md duration-300 text-slate-300 dark:text-gray-900'>
 			<Icon classNames='!w-[48px] sm:!w-[72px]'>
 				<ShellSVG />
 			</Icon>

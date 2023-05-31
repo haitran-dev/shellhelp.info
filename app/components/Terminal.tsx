@@ -87,7 +87,7 @@ export default function Terminal() {
 	console.log({ inputHistory, currentInputIndex });
 
 	return (
-		<div className='w-full flex flex-col gap-4 max-w-[800px] h-[50rem] sm:h-[40rem] md:h-[35rem] p-2 bg-slate-100/70 dark:bg-gray-900/70 backdrop-blur-md rounded-lg shadow-xl dark:text-white'>
+		<div className='w-full flex flex-col gap-4 max-w-[800px] h-[50rem] sm:h-[40rem] md:h-[35rem] p-2 duration-300 bg-slate-100/70 dark:bg-gray-900/70 backdrop-blur-md rounded-lg shadow-xl dark:text-white'>
 			<div className='flex h-5 justify-between items-center relative'>
 				<div className='flex gap-2'>
 					<span className='w-3 h-3 rounded-full bg-red-500 dark:bg-red-400' />
