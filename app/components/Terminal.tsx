@@ -99,13 +99,13 @@ export default function Terminal() {
 				</div>
 				<div className='flex gap-1'>
 					<Icon tooltip='Clear (Ctrl + L)' onClick={clearTerminal}>
-						<EraserSVG className='w-6 h-6' />
+						<EraserSVG className='w-5 h-5' />
 					</Icon>
 					<Icon tooltip='Info'>
-						<InfoSVG className='w-6 h-6' />
+						<InfoSVG className='w-5 h-5' />
 					</Icon>
 					<Icon tooltip='Change theme' onClick={toggleTheme}>
-						<SunSVG className='w-6 h-6' />
+						<SunSVG className='w-5 h-5' />
 					</Icon>
 				</div>
 			</div>
