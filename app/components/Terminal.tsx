@@ -90,7 +90,7 @@ export default function Terminal() {
   }
 
   return (
-    <div className="w-full flex flex-col gap-4 min-w-[300px] max-w-[800px] min-h-[20rem] sm:h-[40rem] md:h-[35rem] p-2 duration-300 bg-slate-100/70 dark:bg-gray-900/70 backdrop-blur-md rounded-lg shadow-xl dark:text-white">
+    <div className="w-full flex flex-col gap-4 min-w-[300px] max-w-[800px] h-[30rem] sm:h-[35rem] p-2 duration-300 bg-slate-100/70 dark:bg-gray-900/70 backdrop-blur-md rounded-lg shadow-xl dark:text-white">
       <div className="flex h-5 justify-between items-center relative">
         <div className="flex gap-2">
           <span className="w-3 h-3 rounded-full bg-red-500 dark:bg-red-400" />
@@ -231,8 +231,6 @@ const Explain = ({
   if (specError) {
     return <Warning warning={specError} />;
   }
-
-  console.log({ specTokens });
 
   return (
     <div className="space-y-2">
