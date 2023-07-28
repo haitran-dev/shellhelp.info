@@ -1,6 +1,6 @@
 # Spell Book ( A visual English dictionary )
 
-<img alt="Explains shell commands with terminal UI" src="src/static/logo.jpg">
+<img alt="Explains shell commands with terminal UI" src="src/static/logo.png">
 
 <p align="center">
   This is a website that explains shell commands with terminal UI
