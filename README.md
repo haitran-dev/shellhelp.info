@@ -11,11 +11,13 @@
 - Clone the repo
 
 - Install packages
+
 ```bash
 npm install
 ```
 
 - Run the local app
+
 ```bash
 npm run dev
 ```
@@ -27,7 +29,7 @@ npm run dev
 - Create a [pull request](https://github.com/haitran-dev/shellhelp.info/pulls) to add new features/ fix bugs.
 
 ### About the tech stack
+
 - React 18 & Next 13
 - Typescript and Javascript
 - TailwindCSS
-
