@@ -1,4 +1,4 @@
-# Spell Book ( A visual English dictionary )
+# Shell Help ( CLI arguments explainer )
 
 <img alt="Explains shell commands with terminal UI" src="public/shellhelp.info.png">
 
