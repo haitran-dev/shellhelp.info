@@ -9,7 +9,7 @@ const roboto = Roboto({
 
 export const metadata = {
   title: "Shell Help",
-  description: "Explain shell commands for developers",
+  description: "CLI arguments explainer",
 };
 
 export default function RootLayout({
