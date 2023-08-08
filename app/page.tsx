@@ -26,7 +26,15 @@ function Logo() {
       </div>
       <div className="space-y-1 text-center">
         <h1 className="sm:text-xl text-white dark:text-black duration-300">
-          CLI arguments explainer with Fig
+          CLI arguments explainer with{" "}
+          <a
+            className="font-bold underline"
+            rel="noopener noreferrer"
+            href="https://fig.io/"
+            target="_blank"
+          >
+            Fig
+          </a>
         </h1>
       </div>
     </>
