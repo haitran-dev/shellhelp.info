@@ -14,7 +14,7 @@ const Suggestion = ({
 }) => {
   return (
     <div className="w-full flex flex-col gap-4 min-w-[300px] max-w-[720px] space-y-1">
-      <p className="text-left text-lg text-white dark:text-black duration-300">
+      <p className="text-left text-lg text-white dark:text-black duration-200">
         Examples
       </p>
       <div className="w-full gap-2 grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))]">
